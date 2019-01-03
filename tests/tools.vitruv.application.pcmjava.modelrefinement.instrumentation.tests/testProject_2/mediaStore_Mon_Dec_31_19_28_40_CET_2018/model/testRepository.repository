@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ASCII"?>
+<repository:Repository xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:repository="http://palladiosimulator.org/PalladioComponentModel/Repository/5.2" xmlns:seff="http://palladiosimulator.org/PalladioComponentModel/SEFF/5.2" id="_8Li9kA0pEemz38-O-KUm_g" entityName="testRepository">
+  <components__Repository xsi:type="repository:BasicComponent" id="_8R7SYA0pEemz38-O-KUm_g" entityName="MediaStore">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="__zU8kA0pEemz38-O-KUm_g" entityName="MediaStore_provides_IMediaStore" providedInterface__OperationProvidedRole="_-3aG4A0pEemz38-O-KUm_g"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_AS3YQA0qEemz38-O-KUm_g" describedService__SEFF="__VAo4A0pEemz38-O-KUm_g"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_AchDgA0qEemz38-O-KUm_g" describedService__SEFF="__fpyoA0pEemz38-O-KUm_g"/>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_9xoKkA0pEemz38-O-KUm_g" entityName="WebGUI">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="__p1pYA0pEemz38-O-KUm_g" entityName="WebGUI_provides_IWebGUI" providedInterface__OperationProvidedRole="_-ty34A0pEemz38-O-KUm_g"/>
+    <requiredRoles_InterfaceRequiringEntity xsi:type="repository:OperationRequiredRole" id="_Al7eMA0qEemz38-O-KUm_g" entityName="Component_WebGUI_requires_IMediaStore" requiredInterface__OperationRequiredRole="_-3aG4A0pEemz38-O-KUm_g"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="__-PzIA0pEemz38-O-KUm_g" describedService__SEFF="__LHGAA0pEemz38-O-KUm_g"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_AIvy8A0qEemz38-O-KUm_g" describedService__SEFF="__Bq2IA0pEemz38-O-KUm_g">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_BsmyYQ0qEemz38-O-KUm_g" successor_AbstractAction="_Br0IMA0qEemz38-O-KUm_g"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_Br0IMA0qEemz38-O-KUm_g" entityName="IA  @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload() at 348" predecessor_AbstractAction="_BsmyYQ0qEemz38-O-KUm_g" successor_AbstractAction="_BsBjkA0qEemz38-O-KUm_g"/>
+      <steps_Behaviour xsi:type="seff:LoopAction" id="_BsBjkA0qEemz38-O-KUm_g" entityName=" @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload() from 372 to 402" predecessor_AbstractAction="_Br0IMA0qEemz38-O-KUm_g" successor_AbstractAction="_BsLUkA0qEemz38-O-KUm_g">
+        <bodyBehaviour_Loop id="_BsBjkQ0qEemz38-O-KUm_g">
+          <steps_Behaviour xsi:type="seff:StartAction" id="_BsEm4Q0qEemz38-O-KUm_g" successor_AbstractAction="_BsFN8A0qEemz38-O-KUm_g"/>
+          <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_BsFN8A0qEemz38-O-KUm_g" entityName="download @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload().Block at 434" predecessor_AbstractAction="_BsEm4Q0qEemz38-O-KUm_g" successor_AbstractAction="_BsHqMA0qEemz38-O-KUm_g" calledService_ExternalService="__fpyoA0pEemz38-O-KUm_g" role_ExternalService="_Al7eMA0qEemz38-O-KUm_g"/>
+          <steps_Behaviour xsi:type="seff:StopAction" id="_BsHqMA0qEemz38-O-KUm_g" predecessor_AbstractAction="_BsFN8A0qEemz38-O-KUm_g"/>
+        </bodyBehaviour_Loop>
+      </steps_Behaviour>
+      <steps_Behaviour xsi:type="seff:BranchAction" id="_BsLUkA0qEemz38-O-KUm_g" entityName=" @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload() from 441 to 456" predecessor_AbstractAction="_BsBjkA0qEemz38-O-KUm_g" successor_AbstractAction="_BsmLUA0qEemz38-O-KUm_g">
+        <branches_Branch xsi:type="seff:ProbabilisticBranchTransition" id="_BsL7oQ0qEemz38-O-KUm_g" entityName="parent  @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload() from 441 to 456/ @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload().Block from 457 to 489">
+          <branchBehaviour_BranchTransition id="_BsL7og0qEemz38-O-KUm_g">
+            <steps_Behaviour xsi:type="seff:StartAction" id="_BsL7ow0qEemz38-O-KUm_g" successor_AbstractAction="_BsMisg0qEemz38-O-KUm_g"/>
+            <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_BsMisg0qEemz38-O-KUm_g" entityName="download @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload().Block at 488" predecessor_AbstractAction="_BsL7ow0qEemz38-O-KUm_g" successor_AbstractAction="_BsQNEA0qEemz38-O-KUm_g" calledService_ExternalService="__fpyoA0pEemz38-O-KUm_g" role_ExternalService="_Al7eMA0qEemz38-O-KUm_g"/>
+            <steps_Behaviour xsi:type="seff:StopAction" id="_BsQNEA0qEemz38-O-KUm_g" predecessor_AbstractAction="_BsMisg0qEemz38-O-KUm_g"/>
+          </branchBehaviour_BranchTransition>
+        </branches_Branch>
+      </steps_Behaviour>
+      <steps_Behaviour xsi:type="seff:InternalCallAction" id="_BsmLUA0qEemz38-O-KUm_g" entityName=" @position: testRepository.WebGUI.WebGUIImpl.java.WebGUIImpl.httpDownload() at 516" predecessor_AbstractAction="_BsLUkA0qEemz38-O-KUm_g" successor_AbstractAction="_BsnZcQ0qEemz38-O-KUm_g"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_BsnZcQ0qEemz38-O-KUm_g" predecessor_AbstractAction="_BsmLUA0qEemz38-O-KUm_g"/>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_-ty34A0pEemz38-O-KUm_g" entityName="IWebGUI">
+    <signatures__OperationInterface id="__Bq2IA0pEemz38-O-KUm_g" entityName="httpDownload"/>
+    <signatures__OperationInterface id="__LHGAA0pEemz38-O-KUm_g" entityName="httpUpload"/>
+  </interfaces__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_-3aG4A0pEemz38-O-KUm_g" entityName="IMediaStore">
+    <signatures__OperationInterface id="__VAo4A0pEemz38-O-KUm_g" entityName="upload"/>
+    <signatures__OperationInterface id="__fpyoA0pEemz38-O-KUm_g" entityName="download"/>
+  </interfaces__Repository>
+</repository:Repository>

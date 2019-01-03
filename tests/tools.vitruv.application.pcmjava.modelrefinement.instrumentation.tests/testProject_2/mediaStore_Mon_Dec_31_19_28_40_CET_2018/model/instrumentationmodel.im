@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ASCII"?>
+<im:AppProbes xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:im="http://www.example.org/im">
+  <probes abstractActionID="_Av7uwA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_A8XoQA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_A8wCwA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_BLNVgA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_BLYUoA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_BK_TEA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_BsLUkA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_Br0IMA0qEemz38-O-KUm_g"/>
+  <probes abstractActionID="_BsBjkA0qEemz38-O-KUm_g"/>
+</im:AppProbes>

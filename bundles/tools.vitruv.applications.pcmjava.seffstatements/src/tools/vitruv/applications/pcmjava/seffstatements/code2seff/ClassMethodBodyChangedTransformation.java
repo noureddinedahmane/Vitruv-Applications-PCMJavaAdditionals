@@ -1,5 +1,6 @@
 package tools.vitruv.applications.pcmjava.seffstatements.code2seff;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -7,6 +8,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.emftext.language.java.members.ClassMethod;
 import org.emftext.language.java.members.Method;
+import org.emftext.language.java.statements.Statement;
 import org.emftext.language.java.statements.StatementListContainer;
 import org.palladiosimulator.pcm.repository.BasicComponent;
 import org.palladiosimulator.pcm.seff.AbstractAction;
@@ -20,15 +22,22 @@ import org.somox.gast2seff.visitors.InterfaceOfExternalCallFindingFactory;
 import org.somox.gast2seff.visitors.MethodCallFinder;
 import org.somox.gast2seff.visitors.ResourceDemandingBehaviourForClassMethodFinding;
 import org.somox.gast2seff.visitors.VisitorUtils;
+import org.somox.sourcecodedecorator.SeffElementSourceCodeLink;
+import org.somox.sourcecodedecorator.SourceCodeDecoratorRepository;
+import org.somox.sourcecodedecorator.SourcecodedecoratorFactory;
 
 import tools.vitruv.framework.correspondence.CorrespondenceModel;
 import tools.vitruv.framework.correspondence.CorrespondenceModelUtil;
 import tools.vitruv.framework.userinteraction.UserInteractor;
 import tools.vitruv.framework.util.bridges.CollectionBridge;
 
+
+
+
+
 /**
  * Class that keeps changes within a class method body consistent with the
- * architecture. Has dependencies to SoMoX as well as to Vitruvius. This is the
+ * architecture. Has dependencies to SoMoX as well as to Vitruvius. This is the 
  * reason that the class is in its own plugin. The class is written in Java and
  * not in Xtend (we do not need the cool features of Xtend within the class).
  *
@@ -71,34 +80,60 @@ public class ClassMethodBodyChangedTransformation {
 	 * 3) reconnect the newly extracted SEFF elements with the old elements 4)
 	 * create new AbstractAction 2 Method correspondences for the new method
 	 * (and its inner methods)
-	 *
+	 * 5) link the abstract actions with the corresponding statements, this will be needed 
+	 * in the instrumentation process
 	 */
 	public void execute(final CorrespondenceModel correspondenceModel,
 			final UserInteractor userInteracting) {
-		if (!this.isArchitectureRelevantChange(correspondenceModel)) {
+		
+		// starting the process
+		if (!this.isArchitectureRelevantChange(correspondenceModel)) {			
 			logger.debug("Change with oldMethod " + this.oldMethod + " and newMethod: " + this.newMethod
 					+ " is not an architecture relevant change");
 			return;
 		}
+				
 		// 1)
 		this.removeCorrespondingAbstractActions(correspondenceModel);
 
 		// 2)
 		final ResourceDemandingBehaviour resourceDemandingBehaviour = this
 				.findRdBehaviorToInsertElements(correspondenceModel);
+		
 		final BasicComponent basicComponent = this.basicComponentFinder.findBasicComponentForMethod(this.newMethod,
 				correspondenceModel);
-		this.executeSoMoXForMethod(basicComponent, resourceDemandingBehaviour);
+		
+		SourceCodeDecoratorRepository sourceCodeDecorator = this.executeSoMoXForMethod(basicComponent, resourceDemandingBehaviour);
 
 		// 3)
 		this.connectCreatedResourceDemandingBehaviour(resourceDemandingBehaviour, correspondenceModel);
 
 		// 4)
 		this.createNewCorrespondences(correspondenceModel, resourceDemandingBehaviour, basicComponent);
-
+		
+		// 5)
+		this.bindAbstractActionsAndStatements(sourceCodeDecorator, correspondenceModel);
+	   
+		
 		return;
 	}
 
+	
+	private void bindAbstractActionsAndStatements(SourceCodeDecoratorRepository sourceCodeDecorator,
+			CorrespondenceModel correspondenceModel) {
+		List<SeffElementSourceCodeLink> seffElementSourceCodeLinks =  sourceCodeDecorator.getSeffElementsSourceCodeLinks();
+        for(SeffElementSourceCodeLink seffElementSourceCodeLink: seffElementSourceCodeLinks) {
+            if(seffElementSourceCodeLink.getSeffElement() instanceof AbstractAction) {
+            	AbstractAction ab = (AbstractAction) seffElementSourceCodeLink.getSeffElement();           
+	            for(Statement statement: seffElementSourceCodeLink.getStatement()) {
+                    CorrespondenceModelUtil.createAndAddCorrespondence(correspondenceModel, ab, statement);
+	            }
+            }
+           
+        }
+	}
+	
+	
 	/**
 	 * checks whether the change is considered architecture relevant. This is
 	 * the case if either the new or the old method does have a corresponding
@@ -123,8 +158,12 @@ public class ClassMethodBodyChangedTransformation {
 		return false;
 	}
 
-	private void executeSoMoXForMethod(final BasicComponent basicComponent,
+	private SourceCodeDecoratorRepository executeSoMoXForMethod(final BasicComponent basicComponent,
 			final ResourceDemandingBehaviour targetResourceDemandingBehaviour) {
+		
+		SourceCodeDecoratorRepository sourceCodeDecorator =
+				SourcecodedecoratorFactory.eINSTANCE.createSourceCodeDecoratorRepository();
+		
 		final MethodCallFinder methodCallFinder = new MethodCallFinder();
 		final FunctionCallClassificationVisitor functionCallClassificationVisitor = new FunctionCallClassificationVisitor(
 				this.iFunctionClassificationStrategy, methodCallFinder);
@@ -135,13 +174,15 @@ public class ClassMethodBodyChangedTransformation {
 			// problems when
 			// changing an abstract method to a ClassMethod
 			VisitorUtils.visitJaMoPPMethod(targetResourceDemandingBehaviour, basicComponent,
-					(StatementListContainer) this.newMethod, null, functionCallClassificationVisitor,
+					(StatementListContainer) this.newMethod, sourceCodeDecorator, functionCallClassificationVisitor,
 					this.interfaceOfExternalCallFinderFactory, this.resourceDemandingBehaviourForClassMethodFinding,
 					methodCallFinder);
 		} else {
 			logger.info("No SEFF recreated for method " + this.newMethod.getName()
 					+ " because it is not a class method. Method " + this.newMethod);
 		}
+		
+		return sourceCodeDecorator;
 
 	}
 
@@ -181,7 +222,7 @@ public class ClassMethodBodyChangedTransformation {
 			return;
 		}
 		for (final AbstractAction correspondingAbstractAction : correspondingAbstractActions) {
-			ci.removeCorrespondencesFor(CollectionBridge.toList(correspondingAbstractAction), null);
+			ci.removeCorrespondencesThatInvolveAtLeastAndDependend(CollectionBridge.toSet(correspondingAbstractAction));
 			EcoreUtil.remove(correspondingAbstractAction);
 		}
 
