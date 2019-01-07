@@ -2,12 +2,20 @@ package tools.vitruv.applications.pcmjava.modelrefinement.tests.instrumentation;
 
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.text.edits.InsertEdit;
 import org.emftext.language.java.members.Method;
@@ -20,7 +28,13 @@ import org.palladiosimulator.pcm.seff.ResourceDemandingSEFF;
 import org.palladiosimulator.pcm.seff.SeffFactory;
 import org.somox.test.gast2seff.visitors.AssertSEFFHelper;
 
+import tools.vitruv.applications.javaim.modelrefinement.InstrumentationModel;
+import tools.vitruv.applications.javaim.modelrefinement.InstrumentationModelImp;
 import tools.vitruv.applications.javaim.modelrefinement.Java2ImMethodChangeTransformationSpecification;
+import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.SourceCodeInstrumentation;
+import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.SourceCodeInstrumentationImp;
+import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.probesprovider.ProbesProvider;
+import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.probesprovider.ProbesProviderImp;
 import tools.vitruv.applications.pcmjava.seffstatements.pojotransformations.Java2PcmWithSeffstatmantsChangePropagationSpecification;
 import tools.vitruv.applications.pcmjava.tests.util.CompilationUnitManipulatorHelper;
 import tools.vitruv.applications.pcmjava.tests.util.Java2PcmTransformationTest;
@@ -65,9 +79,6 @@ public class InstrumentationTest extends Java2PcmTransformationTest{
     @Override
     public void beforeTest() {
     	super.beforeTest();
-        
-        System.out.println("***************** VSUM Location: " + workspace.getAbsolutePath());
-       
         try {
         	this.repository = this.createMediaStoreViaCode();     	
         } catch (Throwable t) {
@@ -76,6 +87,32 @@ public class InstrumentationTest extends Java2PcmTransformationTest{
         this.webGUIPackageName = WEBGUI;
     }
     
+    @Override
+    public void afterTest() {
+    	// instrumentation
+    	try {
+            
+           	IWorkspace workspace = ResourcesPlugin.getWorkspace();  	
+            IJavaProject project = (IJavaProject)JavaCore.create((IProject)workspace.getRoot().getProject(getCurrentTestProjectFolder().getName()));
+            
+            IFile file = project.getProject().getFile("model/instrumentationmodel.im");       
+            URI modelUri = URI.createFileURI(file.getLocation().toString());          
+        	InstrumentationModel im = new InstrumentationModelImp(modelUri);
+        	CorrespondenceModel ci = getCorrespondenceModel();
+            ProbesProvider probesProvider = new ProbesProviderImp(ci, im);
+
+            
+            SourceCodeInstrumentation test =  new SourceCodeInstrumentationImp(ci, project, probesProvider);
+            
+            System.out.println(">>> Starting instrumentation process.............");
+            test.execute();
+           
+            	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	 	
+    }
     
     @Test
     public void mediaStore() throws Throwable {
@@ -87,7 +124,7 @@ public class InstrumentationTest extends Java2PcmTransformationTest{
     
     
     private void addInternalAction() throws Throwable {
-    	final String code = "final int i = 5;\nfinal int j = i + 1;";
+    	final String code = "final int i = 5; int j = i + 1;";
         final ResourceDemandingSEFF seff = this.editWebGUIDownloadMethod(code);
     }
     
@@ -111,14 +148,14 @@ public class InstrumentationTest extends Java2PcmTransformationTest{
     
     
     private void addBranchAction() throws Throwable{
-    	final String code = "\nif(j<10){\n" + this.getExternalCallCode() + "\n}\n";
-        final ResourceDemandingSEFF seff = this.editWebGUIDownloadMethod(code);
+    	 final String code = "\nif(i<10){\n" + this.getExternalCallCode() + "\n}\n";
+    	 final ResourceDemandingSEFF seff = this.editWebGUIDownloadMethod(code);
     }
     
     
     private void addInternalMethodToWebGUI(final String methodName, final String methodContent) throws Throwable {
         final String compilationUnitName = WEBGUI + "Impl";
-        final String methodHeader = "private void " + methodName + "(){\n}";
+        final String methodHeader = "private void " + methodName + "(int i){\n}";
         CompilationUnitManipulatorHelper.addMethodToCompilationUnit(compilationUnitName, methodHeader,
                 this.getCurrentTestProject(), this);
         this.editMethod(methodContent, compilationUnitName, methodName, false);

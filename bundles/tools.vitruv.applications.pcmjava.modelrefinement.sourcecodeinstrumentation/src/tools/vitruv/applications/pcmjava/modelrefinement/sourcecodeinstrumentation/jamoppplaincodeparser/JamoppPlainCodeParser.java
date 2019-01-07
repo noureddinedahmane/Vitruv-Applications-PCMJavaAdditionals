@@ -22,9 +22,7 @@ public class JamoppPlainCodeParser {
 	public static void addAfterContainingStatement(Statement statement, String code) throws IOException {
 		List<Statement> statements = getCodeStatements(code);
 		if(statements != null) {
-			// reverse the order of the list of statements to keep their order after insertion
-			Collections.reverse(statements);
-			
+
 			for(Statement statementToAdd: statements) {
 				statement.addAfterContainingStatement(statementToAdd);
 			}
@@ -35,9 +33,7 @@ public class JamoppPlainCodeParser {
 	public static void addBeforeContainingStatement(Statement statement, String code) throws IOException {
 		List<Statement> statements = getCodeStatements(code);
 		if(statements != null) {
-			// reverse the order of the list of statements to keep their order after insertion
-			Collections.reverse(statements);
-			
+
 			for(Statement statementToAdd: statements) {
 				statement.addBeforeContainingStatement(statementToAdd);
 			}

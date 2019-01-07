@@ -26,8 +26,8 @@ public class InstrumentationStatements {
 		return monitoringStatementInternalAction;
 	}
 	
-	public static MonitoringStatementOperation getOperationInstrumentationCode(String serviceId, String serviceExecutionId, 
-			String[] serviceParametersNames, String callerServiceExecutionId, String callerId) {	
+	public static MonitoringStatementOperation getOperationInstrumentationCode(String serviceId, 
+			String[] serviceParametersNames) {	
 		
 		MonitoringStatementOperation monitoringStatementOperation =  new MonitoringStatementOperation();
 		StringBuilder beforeExecution = new StringBuilder();
@@ -88,7 +88,7 @@ public class InstrumentationStatements {
 	
 	private static String serviceParamsNamesToString(String[] serviceParametersNames, String variableName) {
 		if(serviceParametersNames ==  null) {
-			return "\n ServiceParameters " + variableName + " ="
+			return "\n ServiceParameters serviceParamtersFactory ="
 					+ " serviceParamtersFactory.getServiceParameters(new Object[]{})";
 		}
     	String serviceParams = "{";

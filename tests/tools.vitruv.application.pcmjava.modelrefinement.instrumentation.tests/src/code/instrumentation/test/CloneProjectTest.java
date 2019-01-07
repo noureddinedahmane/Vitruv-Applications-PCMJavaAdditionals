@@ -18,15 +18,6 @@ public class CloneProjectTest {
 	final static String originalProjectName = "Test";
 	final static String clonedProjectName = "Test_instrumentation";
 	
-	
-	@Test
-	public void test() throws IOException {
-		String path = "testProject\\Test\\src";
-		
-		List<Resource> jamoppResources = CodeInstrumentationUtil.loadJaMoPPResourceSet(new File(path));
-		
-		System.out.println("+++++: " + jamoppResources.size());
-	}
 	 
 	//@Test
 	public void cloneProjectTest() throws CoreException {

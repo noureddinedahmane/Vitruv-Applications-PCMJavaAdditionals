@@ -1,4 +1,4 @@
-package tools.vitruv.applications.javaim.modelrefinement;
+package tools.vitruv.applications.pcmjava.seffstatements.code2seff;
 
 public interface Java2ImInternalActionChangeTranformation {
 	public void updateCorrespondingStatements();

@@ -28,6 +28,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: CodeInstrumentation
 Export-Package: tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation,
  tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.instrumentationcodegenerator,
+ tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.jamoppplaincodeparser,
  tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.probesprovider,
  tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.projectmanager,
  tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.util

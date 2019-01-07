@@ -12,6 +12,8 @@ import org.emftext.language.java.statements.Statement;
 import org.emftext.language.java.statements.StatementListContainer;
 import org.palladiosimulator.pcm.repository.BasicComponent;
 import org.palladiosimulator.pcm.seff.AbstractAction;
+import org.palladiosimulator.pcm.seff.AbstractBranchTransition;
+import org.palladiosimulator.pcm.seff.BranchAction;
 import org.palladiosimulator.pcm.seff.ResourceDemandingBehaviour;
 import org.palladiosimulator.pcm.seff.SeffFactory;
 import org.palladiosimulator.pcm.seff.StartAction;
@@ -124,13 +126,22 @@ public class ClassMethodBodyChangedTransformation {
 		List<SeffElementSourceCodeLink> seffElementSourceCodeLinks =  sourceCodeDecorator.getSeffElementsSourceCodeLinks();
         for(SeffElementSourceCodeLink seffElementSourceCodeLink: seffElementSourceCodeLinks) {
             if(seffElementSourceCodeLink.getSeffElement() instanceof AbstractAction) {
-            	AbstractAction ab = (AbstractAction) seffElementSourceCodeLink.getSeffElement();           
+            	AbstractAction ab = (AbstractAction) seffElementSourceCodeLink.getSeffElement();
 	            for(Statement statement: seffElementSourceCodeLink.getStatement()) {
                     CorrespondenceModelUtil.createAndAddCorrespondence(correspondenceModel, ab, statement);
 	            }
+            } 
+            else if(seffElementSourceCodeLink.getSeffElement() instanceof ResourceDemandingBehaviour) {
+            	ResourceDemandingBehaviour seff = (ResourceDemandingBehaviour) seffElementSourceCodeLink.getSeffElement();
+            	AbstractBranchTransition abstractBranchTr = seff.getAbstractBranchTransition_ResourceDemandingBehaviour();
+            	
+            	BranchAction branchAction = abstractBranchTr.getBranchAction_AbstractBranchTransition();
+            	for(Statement statement: seffElementSourceCodeLink.getStatement()) {
+            		CorrespondenceModelUtil.createAndAddCorrespondence(correspondenceModel, branchAction, statement);
+            	}
             }
-           
         }
+
 	}
 	
 	

@@ -1,7 +1,7 @@
 package tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation;
 
 
-import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.instrumentationcodegenerator.InstrumentationStatements_old;
+import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.instrumentationcodegenerator.InstrumentationStatements;
 import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.instrumentationcodegenerator.MonitoringStatementBranch;
 import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.instrumentationcodegenerator.MonitoringStatementInternalAction;
 import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentation.instrumentationcodegenerator.MonitoringStatementLoop;
@@ -13,6 +13,7 @@ import tools.vitruv.applications.pcmjava.modelrefinement.sourcecodeinstrumentati
 import tools.vitruv.framework.correspondence.Correspondence;
 import tools.vitruv.framework.correspondence.CorrespondenceModel;
 import tools.vitruv.framework.correspondence.CorrespondenceModelUtil;
+
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -43,19 +44,23 @@ import org.palladiosimulator.pcm.seff.BranchAction;
 import org.palladiosimulator.pcm.seff.InternalAction;
 import org.palladiosimulator.pcm.seff.LoopAction;
 import org.palladiosimulator.pcm.seff.ResourceDemandingBehaviour;
+import org.palladiosimulator.pcm.seff.ResourceDemandingSEFF;
+
 import de.uka.ipd.sdq.identifier.Identifier;
 
 public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 	private static final Logger logger = Logger.getLogger(SourceCodeInstrumentationImp.class.getSimpleName());
 	
     private Map<AbstractAction, List<Statement>> probesToStatements;
+    private List<Method> instrumentedMethods;
     private CorrespondenceModel correspondenceModel;
     private IJavaProject iProject;
     private ProbesProvider probesProvider;
 	
 	public SourceCodeInstrumentationImp(CorrespondenceModel correspondenceModel, IJavaProject iProject,
 			ProbesProvider probesProvider) {
-		probesToStatements =  new HashMap<AbstractAction, List<Statement>>();
+		this.probesToStatements =  new HashMap<AbstractAction, List<Statement>>();
+		this.instrumentedMethods = new ArrayList<Method>();
 		this.iProject = iProject;
 		this.probesProvider = probesProvider;
 		this.correspondenceModel = correspondenceModel;
@@ -107,8 +112,9 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 				this.probesToStatements.put(aa, statementsToMap);
 			}
 		}
+		
 	}
-	
+		
 	
 	private List<Statement> findSimilarStatements(Set<Statement> originalStatements, List<Statement> clonedStatements){
 		List<Statement> statementsToMap = new ArrayList<Statement>();
@@ -144,18 +150,18 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 	
 	
     
-	private void instrumentSourceCode() throws IOException { 
-		// insert service probe..
-		
+	private void instrumentSourceCode() throws IOException { 		
 		for (Map.Entry<AbstractAction, List<Statement>> entry : this.probesToStatements.entrySet()){
 			AbstractAction aa = entry.getKey();
 			List<Statement> statements = entry.getValue();
-			//FIXME: move it to somewhere
+
+			// instrument the method if not yet instrumented
 			instrumentOperation((ClassMethod)statements.get(0).getParentByType(Method.class));
 			
+			// instrumented based on the abstract action type
 			if(aa instanceof InternalAction) {
     			MonitoringStatementInternalAction internalActionProbe = 
-						InstrumentationStatements_old.getInternalActionInstrumentationCode(aa.getId(), null);
+						InstrumentationStatements.getInternalActionInstrumentationCode(aa.getId(), null);
 				
 				JamoppPlainCodeParser.addBeforeContainingStatement(statements.get(0), 
 						internalActionProbe.getBeforeExecution());
@@ -164,11 +170,15 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 						internalActionProbe.getAfterExecution());
     		}
     		else if(aa instanceof BranchAction) {
-    			MonitoringStatementBranch branchActionProbe = 
-               		 InstrumentationStatements_old.getBranchActionInstrumentationCode(aa.getId(), null, null);
-				
-   				Statement branchFirstChildStatement = 
+    			Statement branchFirstChildStatement = 
    						CodeInstrumentationUtil.getbranchLoopFirstChildStatement(statements.get(0));
+    			
+    			if(branchFirstChildStatement == null) {
+    				continue;
+    			}
+    			
+    			MonitoringStatementBranch branchActionProbe = 
+               		 InstrumentationStatements.getBranchActionInstrumentationCode(null, aa.getId(), null);
    				
    				JamoppPlainCodeParser.addBeforeContainingStatement(statements.get(0), 
    						branchActionProbe.getBeforeExecution());
@@ -180,11 +190,15 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
    						branchActionProbe.getAfterExecution());
     		}
     		else if(aa instanceof LoopAction) {
-    			MonitoringStatementLoop loopActionProbe = 
-						InstrumentationStatements_old.getLoopActionInstrumentationCode(aa.getId(), null);	
-		
-				Statement loopFirstChildStatement = 
+    			Statement loopFirstChildStatement = 
 						CodeInstrumentationUtil.getbranchLoopFirstChildStatement(statements.get(0));
+    			
+    			if(loopFirstChildStatement == null) {
+    				continue;
+    			}
+    			
+    			MonitoringStatementLoop loopActionProbe = 
+						InstrumentationStatements.getLoopActionInstrumentationCode(aa.getId(), null);	
 				
 				JamoppPlainCodeParser.addBeforeContainingStatement(statements.get(0), 
 						loopActionProbe.getBeforeExecution());
@@ -198,8 +212,11 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 			
 			// show the modified code...
 			ClassMethod method = statements.get(0).getParentByType(ClassMethod.class);
+			this.saveResource(method);
 			System.out.println("-------Instrumented code: ");
 			System.out.println(showMethodCode(method));
+			
+			
 		}
         	
 	}
@@ -241,18 +258,21 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
         return new ArrayList<Statement>(listStatements);  
     }
 	    
-	    
-	private static void instrumentOperation(ClassMethod classMethod) throws IOException {
-		List<Statement> statements = classMethod.getStatements();
+	
+	private  void instrumentOperation(Method method) throws IOException {
+		if(this.instrumentedMethods.contains(method)) {
+			return;
+		}
+        
+		List<Statement> statements = ((ClassMethod) method).getStatements();
 		if(statements.size() != 0) {
-            //String[] serviceParametersNames = getSeviceParamsNames(classMethod);
-           
-			// FIXME: delete and uncomment above
-			String[] serviceParametersNames = {"i", "j"};
+            String[] serviceParametersNames = getSeviceParamsNames((ClassMethod) method);
+          
+			// get service ID
+			String serviceSeffId = this.getMethodSeffId(method);
 			
 			MonitoringStatementOperation operation = 
-					InstrumentationStatements_old.getOperationInstrumentationCode(null, 
-							null, serviceParametersNames, null, null);
+					InstrumentationStatements.getOperationInstrumentationCode(serviceSeffId, serviceParametersNames);
 			
 			Statement firstStatement = statements.get(0);
 			Statement lastStatement = statements.get(statements.size() - 1);
@@ -266,8 +286,27 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 			}
 			
 		}
+		
+		// mark the method as instrumented
+		this.instrumentedMethods.add(method);
 	}
 	
+	
+	private String getMethodSeffId(Method method) {
+    	final Set<ResourceDemandingSEFF> seffs = CorrespondenceModelUtil.getCorrespondingEObjectsByType(this.correspondenceModel, method,
+                ResourceDemandingSEFF.class);   
+        if (seffs != null) {
+          if(seffs.size() != 0) {
+        	  return seffs.iterator().next().getId();
+          }
+          else {
+        	  return null;
+          }
+        }
+        else {
+        	return null;
+        }
+    }
 
 	
 	private static String[] getSeviceParamsNames(ClassMethod classMethod) {
@@ -302,6 +341,14 @@ public class SourceCodeInstrumentationImp implements SourceCodeInstrumentation{
 	    writer.close();
 	}
 	
+	private void saveResource(Method method) {
+		Resource resource = method.eResource();
+		try {
+			resource.save(Collections.EMPTY_MAP);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public static String showMethodCode(Method method) {
 		  Resource resource = method.eResource(); 

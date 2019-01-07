@@ -103,23 +103,15 @@ public class CodeInstrumentationUtil {
 	public static boolean compareStatements(Statement originalStatement, Statement clonedStatement) {
 		
 		/**
-		 * to compare two eobjects, the emf camapre can be used 
-		 * we should create a Matching strategy that defines if two eobjects are matched
-		 * for the moment the statement will be compared based on type and the location in compilation unit
+		 * compare tow statement from different project based on the location
 		 */
-		
-		if(originalStatement.getClass().equals(clonedStatement.getClass())) {
-			if(getStatementLocation(originalStatement) == getStatementLocation(clonedStatement)) {
-				return true;
-			}
-			else {
-				return false;
-			}
+		if(getStatementLocation(originalStatement) == getStatementLocation(clonedStatement)) {
+			return true;
 		}
 		else {
 			return false;
 		}
-			
+
 			
 	}
 	
@@ -127,8 +119,7 @@ public class CodeInstrumentationUtil {
 		 Resource resource = s.eResource(); 
 		 JavaResource textResource = (JavaResource) resource;
 		 IJavaLocationMap locationMap = textResource.getLocationMap();										
-		 return locationMap.getLine(s);	
-		 
+		 return locationMap.getLine(s);	 
 	}
 	
 	

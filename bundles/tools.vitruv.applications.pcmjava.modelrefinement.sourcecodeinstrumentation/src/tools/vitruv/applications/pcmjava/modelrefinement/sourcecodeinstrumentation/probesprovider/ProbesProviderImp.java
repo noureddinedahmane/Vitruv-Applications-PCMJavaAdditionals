@@ -46,6 +46,7 @@ public class ProbesProviderImp implements ProbesProvider{
     	List<AbstractAction> listAbstractionAction = new ArrayList<AbstractAction>();
     	
     	Set<Correspondence> allCorrespondences = ci.getAllCorrespondencesWithoutDependencies();
+    	//List<Correspondence> allCorrespondences = ci.getAllCorrespondences();
     	for(Correspondence correspondence: allCorrespondences) {
         	if(isProbe(correspondence.getAs().get(0))) {
         		listAbstractionAction.add((AbstractAction) correspondence.getAs().get(0));

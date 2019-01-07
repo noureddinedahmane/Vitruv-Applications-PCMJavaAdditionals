@@ -1,4 +1,4 @@
-package tools.vitruv.applications.javaim.modelrefinement;
+package tools.vitruv.applications.pcmjava.seffstatements.code2seff;
 
 import java.util.ArrayList;
 import java.util.List;

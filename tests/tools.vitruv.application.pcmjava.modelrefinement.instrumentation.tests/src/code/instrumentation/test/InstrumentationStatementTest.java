@@ -14,7 +14,7 @@ public class InstrumentationStatementTest {
 	public void instrumentationStatementTest() {
 			
 		MonitoringStatementInternalAction internalActionProbe = InstrumentationStatements.getInternalActionInstrumentationCode("23adasf", null);
-		MonitoringStatementOperation operationProbe = InstrumentationStatements.getOperationInstrumentationCode("23wedasf", null, null, null, null);
+		MonitoringStatementOperation operationProbe = InstrumentationStatements.getOperationInstrumentationCode("23wedasf", null);
 		MonitoringStatementLoop loopActionProbe = InstrumentationStatements.getLoopActionInstrumentationCode("23wedasf", null);
 		MonitoringStatementBranch branchActionProbe = InstrumentationStatements.getBranchActionInstrumentationCode("23wedasf", null, null);
 		
